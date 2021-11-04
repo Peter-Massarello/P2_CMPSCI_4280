@@ -2,11 +2,11 @@ CC = gcc
 
 CFLAGS = -g -std=c++11 -lstdc++
  
-all: scanner
+all: parser
 
-scanner: main.cpp token.hpp scanner.hpp scanner.cpp
+parser: main.cpp token.hpp scanner.hpp scanner.cpp parser.hpp parser.cpp
 	$(CC) -o $@ $^ $(CFLAGS) 
  
 clean:
-	rm scanner 
+	rm parser 
 	rm -r *.dSYM
