@@ -21,7 +21,7 @@ void If();
 void Loop();
 void Assign();
 void RO();
-void label();
+void Label();
 void Goto();
 void printAndIncrement();
 void error(string grammarLevel, Token* tk);
