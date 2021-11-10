@@ -14,14 +14,20 @@ Class: CMPSCI 4280
 #include <string>
 using namespace std;
 
+enum TokenType{
+    STARTtk, STOPtk, LOOPtk, WHILEtk, FORtk, LABELtk, EXITtk, LISTENtk, TALKtk, PROGRAMtk, IFtk, THENtk, ASSIGNtk, DECLAREtk, JUMPtk, ELSEtk,
+    DIGITtk, EQUALtk, DEQUALtk, LESSTHANtk, GREATERTHANtk, COLONtk, COLONEQtk, PLUStk, MINUStk, MULTtk, DIVtk, MODtk, DOTtk, LPARtk, RPARtk, COMMAtk,
+    LBRACtk, RBRACtk, SEMItk, LBRACKtk, RBRACKtk, IDtk, EOFtk
+};
+
 // Struct for Token
 struct Token {
     string token;
-    string tokenType;
+    TokenType tokenType;
     int lineNum;
     int charNum;
 
-    Token(string tokenName, string type, int line, int charNumber){
+    Token(string tokenName, TokenType type, int line, int charNumber){
         token = tokenName;
         tokenType = type;
         lineNum = line;

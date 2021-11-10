@@ -29,6 +29,9 @@ states FSA_TABLE[state][columns] = {
 /* s23 */ {RBRAK, RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK,  RBRAK, RBRAK, RBRAK, ERROR},
 };
 
+// Token list
+vector<Token*> tokens;
+
 // Map for characters to column numbers for FSA Table
 map<char, int> columnMap = {
     {'a', 0},
@@ -119,28 +122,48 @@ map<char, int> columnMap = {
 };
 
 // Map of final state value to Token type
-map<int, string> tokenTypes = {
-    {2, "Digit Token"},
-    {3, "= Token"},
-    {4, "== Token"},
-    {5, "< Token"},
-    {6, "> Token"},
-    {7, ": Token"},
-    {8, ":= Token"},
-    {9, "+ Token"},
-    {10, "- Token"},
-    {11, "* Token"},
-    {12, "/ Token"},
-    {13, "% Token"},
-    {14, ". Token"},
-    {15, "( Token"},
-    {16, ") Token"},
-    {17, ", Token"},
-    {18, "{ Token"},
-    {19, "} Token"},
-    {20, "; Token"},
-    {21, "[ Token"},
-    {22, "] Token"}
+map<int, TokenType> tokenTypes = {
+    {2, DIGITtk},
+    {3, EQUALtk},
+    {4, DEQUALtk},
+    {5, LESSTHANtk},
+    {6, GREATERTHANtk},
+    {7, COLONtk},
+    {8, COLONEQtk},
+    {9, PLUStk},
+    {10, MINUStk},
+    {11, MULTtk},
+    {12, DIVtk},
+    {13, MODtk},
+    {14, DOTtk},
+    {15, LPARtk},
+    {16, RPARtk},
+    {17, COMMAtk},
+    {18, LBRACtk},
+    {19, RBRACtk},
+    {20, SEMItk},
+    {21, LBRACKtk},
+    {22, RBRACKtk}
+};
+
+// Map of final state value to Token type
+map<string, TokenType> keyWordTkTypes = {
+    {"start", STARTtk},
+    {"stop", STOPtk},
+    {"loop", LOOPtk},
+    {"while", WHILEtk},
+    {"for", FORtk},
+    {"label", LABELtk},
+    {"exit", EXITtk},
+    {"listen", LISTENtk},
+    {"talk", TALKtk},
+    {"program", PROGRAMtk},
+    {"if", IFtk},
+    {"then", THENtk},
+    {"assign", ASSIGNtk},
+    {"declare", DECLAREtk},
+    {"jump", JUMPtk},
+    {"else", ELSEtk}
 };
 
 // Set of keywords 
@@ -195,8 +218,8 @@ void errorCall(DriverData* data, char nextChar){
 }
 
 // Given token data from drive, generated ID token
-Token* generateToken(string tokenValue, string type, DriverData* data){
-    Token* generatedToken = new Token("", "", 0, 0);
+Token* generateToken(string tokenValue, TokenType type, DriverData* data){
+    Token* generatedToken = new Token("", DIGITtk, 0, 0);
 
     generatedToken->token = tokenValue;
     generatedToken->tokenType = type;
@@ -204,6 +227,10 @@ Token* generateToken(string tokenValue, string type, DriverData* data){
     generatedToken->lineNum = data->currentLineCount;
 
     return generatedToken;
+}
+
+TokenType findKeywordTkType(string tokenType){
+    return keyWordTkTypes.at(tokenType);
 }
 
 // Main function called from driver which builds a vector of tokens from each line
@@ -229,11 +256,11 @@ vector<Token*> buildTokenFromLine(string line, DriverData* data){
             // If nextState is ID, must figure out if ID is a KeyWord Token or not
             if (nextState == ID){
                 if (keyWords.find(tokenValue) != keyWords.end()){
-                    currentToken = generateToken(tokenValue, "KeyWord Token", data);
+                    currentToken = generateToken(tokenValue, findKeywordTkType(tokenValue), data);
 
                     tokenList.push_back(currentToken);
                 } else {
-                    currentToken = generateToken(tokenValue, "ID Token", data);
+                    currentToken = generateToken(tokenValue, IDtk, data);
 
                     tokenList.push_back(currentToken);
                 }
@@ -277,7 +304,6 @@ void freeTokenVector(vector<Token*> tokens){
 
 // Main driver function which goes through each line taken from file
 vector<Token*> driverFunction(vector<string> lines){
-    vector<Token*> tokens;
     vector<Token*> tempTokensList;
     DriverData* data = new DriverData(1,0,0);
 
@@ -291,7 +317,7 @@ vector<Token*> driverFunction(vector<string> lines){
         data->currentCharCount = 0;
         data->currentLineCount += 1;
     }
-    Token* eofToken = generateToken("", "EOF Token", data);
+    Token* eofToken = generateToken("", EOFtk, data);
     tokens.push_back(eofToken);
 
     delete data; // free data
@@ -389,4 +415,8 @@ vector<Token*> createTokenVector(string fileName){
     tokens = driverFunction(lines);
 
     return tokens;
+}
+
+Token* scanner(vector<Token*> tokens, int tokenIndex){
+    return tokens.at(tokenIndex);
 }

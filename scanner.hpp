@@ -28,4 +28,8 @@ vector<Token*> createTokenVector(string fileName);
 void printTokens(vector<Token*> tokens);
 
 void freeTokenVector(vector<Token*> tokens);
+
+Token* scanner(vector<Token*> tokens, int tokenIndex);
+
+TokenType findKeywordTkType(string tokenType);
 #endif
