@@ -26,12 +26,15 @@ void Program(){
     if (tk->tokenType == PROGRAMtk){
         printAndIncrement();
         Block();
-    }
-    else
-        error("Program", tk);
+    }else error("Program", tk);
+
+    if (tk->tokenType == EOFtk){
+        cout << tk->token << " " << tk->tokenType << endl;
+    } else error("Program", tk);
 }
 
 void Block(){
+    cout << "In Block" << endl;
     if (tk->tokenType == STARTtk){
         printAndIncrement();
         Vars();
@@ -39,8 +42,9 @@ void Block(){
 
         if (tk->tokenType == STOPtk){
             printAndIncrement();
-        } else error("Block", tk);
-    } else error("Block", tk);
+            return;
+        } else error("Block Stop", tk);
+    } else error("Block Start", tk);
 }
 
 void Vars(){
@@ -73,55 +77,54 @@ void Stats(){
 }
 
 void Stat(){
+    cout << "In stat" << endl;
     if (tk->tokenType == LISTENtk){
         In();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
-        } else error("Stat", tk);
+        } else error("In Stat", tk);
     } else if (tk->tokenType == TALKtk){
         Out();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
-        } else error("Stat", tk);
+        } else error("Out Stat", tk);
     } else if (tk->tokenType == STARTtk){
         Block();
 
-        if (tk->tokenType == SEMItk){
-            printAndIncrement();
-        } else error("Stat", tk);
     } else if (tk->tokenType == IFtk){
+        cout << "in if stat with current tk " << tk->token << endl;
         If();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
-        } else error("Stat", tk);
+        } else error("If Stat", tk);
     } else if (tk->tokenType == WHILEtk){
         Loop();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
-        } else error("Stat", tk);
+        } else error("Loop Stat", tk);
     } else if (tk->tokenType == ASSIGNtk){
         Assign();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
-        } else error("Stat", tk);
+        } else error("Assign Stat", tk);
     } else if (tk->tokenType == LABELtk){
         Label();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
-        } else error("Stat", tk);
+        } else error("Label Stat", tk);
     }  else if (tk->tokenType == JUMPtk){
         Goto();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
-        } else error("Stat", tk);
-    } else error("Stat", tk);
+        } else error("Goto Stat", tk);
+    } else error("Else Stat", tk);
 }
 
 void Mstat(){
@@ -131,7 +134,8 @@ void Mstat(){
         tk->tokenType == WHILEtk || 
         tk->tokenType == ASSIGNtk || 
         tk->tokenType == LABELtk || 
-        tk->tokenType == JUMPtk)
+        tk->tokenType == JUMPtk ||
+        tk->tokenType == STARTtk)
     {
         Stat();
         Mstat();    
