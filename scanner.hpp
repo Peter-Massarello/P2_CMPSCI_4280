@@ -2,6 +2,7 @@
 #define SCAN_H
 
 #include "token.hpp"
+#include "node.hpp"
 #include <iostream>
 #include <stdio.h>
 #include <fstream>

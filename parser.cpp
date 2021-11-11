@@ -1,5 +1,6 @@
 #include "parser.hpp"
 #include "scanner.hpp"
+#include "node.hpp"
 
 static Token* tk;
 vector<Token*> tokenList;
@@ -34,7 +35,6 @@ void Program(){
 }
 
 void Block(){
-    cout << "In Block" << endl;
     if (tk->tokenType == STARTtk){
         printAndIncrement();
         Vars();
@@ -77,7 +77,6 @@ void Stats(){
 }
 
 void Stat(){
-    cout << "In stat" << endl;
     if (tk->tokenType == LISTENtk){
         In();
 
@@ -94,7 +93,6 @@ void Stat(){
         Block();
 
     } else if (tk->tokenType == IFtk){
-        cout << "in if stat with current tk " << tk->token << endl;
         If();
 
         if (tk->tokenType == SEMItk){
@@ -312,6 +310,39 @@ void R(){
     } else if (tk->tokenType == DIGITtk){
         printAndIncrement();
     } else error("R", tk);
+}
+
+// Prints current node level to file
+void printRootLevelToStdOut(Node* &root, int level){
+
+}
+
+// left root right
+void printInorder(ofstream &file, Node* &root, int level){
+    if (root == NULL) return;
+
+    //left substree
+    printInorder(file, root->child1, level+1);
+
+    //root
+    printRootLevelToStdOut(root, level);    
+
+    //right subtree
+    printInorder(file, root->child2, level+1);
+}
+
+// root left right
+void printPreorder(ofstream &file, Node* &root, int level){
+    if (root == NULL) return;
+
+    //root
+    printRootLevelToStdOut(root, level);  
+
+    //left substree
+    printInorder(file, root->child1, level+1);  
+
+    //right subtree
+    printInorder(file, root->child2, level+1);
 }
 
 void error(string grammarLevel, Token* tk){

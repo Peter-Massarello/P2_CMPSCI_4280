@@ -24,6 +24,7 @@ void RO();
 void Label();
 void Goto();
 void printAndIncrement();
+void printRootLevelToStdOut(Node* &root, int level);
 void error(string grammarLevel, Token* tk);
 
 #endif
