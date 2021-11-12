@@ -17,7 +17,7 @@ using namespace std;
 enum TokenType{
     STARTtk, STOPtk, LOOPtk, WHILEtk, FORtk, LABELtk, EXITtk, LISTENtk, TALKtk, PROGRAMtk, IFtk, THENtk, ASSIGNtk, DECLAREtk, JUMPtk, ELSEtk,
     DIGITtk, EQUALtk, DEQUALtk, LESSTHANtk, GREATERTHANtk, COLONtk, COLONEQtk, PLUStk, MINUStk, MULTtk, DIVtk, MODtk, DOTtk, LPARtk, RPARtk, COMMAtk,
-    LBRACtk, RBRACtk, SEMItk, LBRACKtk, RBRACKtk, IDtk, EOFtk
+    LBRACtk, RBRACtk, SEMItk, LBRACKtk, RBRACKtk, IDtk, EOFtk, NULLtk
 };
 
 // Struct for Token

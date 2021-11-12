@@ -229,6 +229,18 @@ Token* generateToken(string tokenValue, TokenType type, DriverData* data){
     return generatedToken;
 }
 
+// Given token data from drive, generated ID token
+Token* generateToken(string tokenValue, TokenType type, int charCount, int lineCount){
+    Token* generatedToken = new Token("", DIGITtk, 0, 0);
+
+    generatedToken->token = tokenValue;
+    generatedToken->tokenType = type;
+    generatedToken->charNum = charCount;
+    generatedToken->lineNum = lineCount;
+
+    return generatedToken;
+}
+
 TokenType findKeywordTkType(string tokenType){
     return keyWordTkTypes.at(tokenType);
 }

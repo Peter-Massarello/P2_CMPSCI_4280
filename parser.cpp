@@ -9,11 +9,13 @@ static int tokenIndex = 0;
 void parse(vector<Token*> tokens){
     cout << "parsing" << endl;
     tokenList = tokens;
+    Node *root;
 
     tk = scanner(tokenList, tokenIndex);
     tokenIndex++;
 
-    Program();
+    root = Program();
+
 }
 
 void printAndIncrement(){
@@ -22,110 +24,167 @@ void printAndIncrement(){
     tokenIndex++;
 }
 
-void Program(){
-    Vars();
+Node* initNode(){
+    Node *newNode = new Node();
+
+    newNode->nodeType = "";
+
+    newNode->tk1 = generateToken("", NULLtk, 0, 0);
+    newNode->tk2 = generateToken("", NULLtk, 0, 0);
+    newNode->tk3 = generateToken("", NULLtk, 0, 0);
+
+    newNode->child1 = NULL;
+    newNode->child2 = NULL;
+    newNode->child3 = NULL;
+    newNode->child4 = NULL;
+    newNode->child5 = NULL;
+
+    return newNode;
+}
+
+Node* Program(){
+    Node *child = initNode();
+
+    child->child1 = Vars();
     if (tk->tokenType == PROGRAMtk){
         printAndIncrement();
-        Block();
+       child->child2 = Block();
     }else error("Program", tk);
 
     if (tk->tokenType == EOFtk){
         cout << tk->token << " " << tk->tokenType << endl;
     } else error("Program", tk);
+
+    return child;
 }
 
-void Block(){
+Node* Block(){
     if (tk->tokenType == STARTtk){
+        Node *child = initNode();
+
         printAndIncrement();
-        Vars();
-        Stats();
+
+        child->child1 = Vars();
+        child->child2 = Stats();
 
         if (tk->tokenType == STOPtk){
             printAndIncrement();
-            return;
+            return child;
         } else error("Block Stop", tk);
     } else error("Block Start", tk);
 }
 
-void Vars(){
+Node* Vars(){
+    Node *child = initNode();
+
     if (tk->tokenType == DECLAREtk){
         printAndIncrement();
 
         if (tk->tokenType == IDtk){
+            child->tk1 = tk;
             printAndIncrement();
+            
 
             if (tk->tokenType == EQUALtk){
                 printAndIncrement();
 
                 if (tk->tokenType == DIGITtk) {
+                    child->tk2 = tk;
                     printAndIncrement();
 
                     if (tk->tokenType == SEMItk){
                         printAndIncrement();
 
-                        Vars();
+                        child->child1 = Vars();
+                        return child;
                     }
                 } else error("Vars", tk);
             } else error("Vars", tk);
         } else error("Vars", tk);
     }
+
+    return child;
 }
 
-void Stats(){
-    Stat();
-    Mstat();
+Node* Stats(){
+    Node *child = initNode();
+
+    child->child1 = Stat();
+    child->child2 = Mstat();
 }
 
-void Stat(){
+Node* Stat(){
+    Node *child = initNode();
+
     if (tk->tokenType == LISTENtk){
-        In();
+        child->child1 = In();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
+
+            return child;
         } else error("In Stat", tk);
     } else if (tk->tokenType == TALKtk){
-        Out();
+        child->child1 = Out();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
+
+            return child;
         } else error("Out Stat", tk);
     } else if (tk->tokenType == STARTtk){
-        Block();
+        child->child1 = Block();
 
+        return child;
     } else if (tk->tokenType == IFtk){
-        If();
+        child->child1 = If();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
+
+            return child;
         } else error("If Stat", tk);
     } else if (tk->tokenType == WHILEtk){
-        Loop();
+        child->child1 = Loop();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
+
+            return child;
         } else error("Loop Stat", tk);
     } else if (tk->tokenType == ASSIGNtk){
-        Assign();
+        child->child1 = Assign();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
+
+            return child;
         } else error("Assign Stat", tk);
     } else if (tk->tokenType == LABELtk){
-        Label();
+        child->child1 = Label();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
+
+            return child;
         } else error("Label Stat", tk);
     }  else if (tk->tokenType == JUMPtk){
-        Goto();
+        child->child1 = Goto();
 
         if (tk->tokenType == SEMItk){
             printAndIncrement();
+
+            return child;
         } else error("Goto Stat", tk);
-    } else error("Else Stat", tk);
+    } else {
+        error("Else Stat", tk);
+        return NULL;
+    } 
 }
 
-void Mstat(){
+Node* Mstat(){
+    Node *child = initNode();
+
     if (tk->tokenType == LISTENtk ||
         tk->tokenType == TALKtk || 
         tk->tokenType == IFtk || 
@@ -135,35 +194,49 @@ void Mstat(){
         tk->tokenType == JUMPtk ||
         tk->tokenType == STARTtk)
     {
-        Stat();
-        Mstat();    
+        child->child1 = Stat();
+        child->child2 = Mstat();    
     }
+
+    return child;
 }
 
-void In(){
+Node* In(){
+    Node *child = initNode();
+
     printAndIncrement();
 
     if (tk->tokenType == IDtk){
+        child->tk1 = tk;
         printAndIncrement();
+        return child;
 
-    } else error("In", tk);
+    } else {
+        error("In", tk);
+        return NULL;
+    }
 }
 
-void Out(){
+Node* Out(){
+    Node *child = initNode();
+
     printAndIncrement();
 
-    Expression();
+    child->child1 = Expression();
+
+    return child;
 }
 
-void If(){
+Node* If(){
+    Node *child = initNode();
     printAndIncrement();
 
     if (tk->tokenType == LBRACKtk){
         printAndIncrement();
 
-        Expression();
-        RO();
-        Expression();
+        child->child1 = Expression();
+        child->child2 = RO();
+        child->child3 = Expression();
 
         if (tk->tokenType == RBRACKtk){
             printAndIncrement();
@@ -171,144 +244,244 @@ void If(){
             if (tk->tokenType == THENtk){
                 printAndIncrement();
 
-                Stat();
+                child->child4 = Stat();
 
                 if (tk->tokenType == ELSEtk){
                     printAndIncrement();
 
-                    Stat();
+                    child->child5 = Stat();
+
+                    return child;
                 }
             } else error("If", tk);
         }else error("If", tk);
-    }else error("If", tk);
+    }else {
+        error("If", tk);
+
+        return NULL;
+    }
 }
 
-void Loop(){
+Node* Loop(){
+    Node *child = initNode();
     printAndIncrement();
 
     if (tk->tokenType == LBRACKtk){
         printAndIncrement();
 
-        Expression();
-        RO();
-        Expression();
+        child->child1 = Expression();
+        child->child2 = RO();
+        child->child3 = Expression();
 
         if (tk->tokenType == RBRACKtk){
             printAndIncrement();
 
-            Stat();
+            child->child4 = Stat();
+
+            return child;
         }else error("Loop", tk);
-    }else error("Loop", tk);
+    }else {
+        error("Loop", tk);
+
+        return NULL;
+    }
 }
 
-void Assign(){
+Node* Assign(){
+    Node *child = initNode();
     printAndIncrement();
 
     if (tk->tokenType == IDtk){
+        child->tk1 = tk;
         printAndIncrement();
 
         if (tk->tokenType == EQUALtk) {
             printAndIncrement();
 
-            Expression();
+            child->child1 = Expression();
+
+            return child;
         } else error("Assign", tk);
-    } else error("Assign", tk);
+    } else {
+        error("Assign", tk);
+
+        return NULL;
+    }
 }
 
-void Goto(){
+Node* Goto(){
+    Node *child = initNode();
     printAndIncrement();
 
     if (tk->tokenType == IDtk){
+        child->tk1 = tk;
         printAndIncrement();
-    } else error("Goto", tk);
+
+        return child;
+    } else {
+        error("Goto", tk);
+
+        return NULL;
+    }
 }
 
-void Label(){
+Node* Label(){
+    Node *child = initNode();
     printAndIncrement();
 
     if (tk->tokenType == IDtk){
+        child->tk1 = tk;
         printAndIncrement();
-    } else error("Label", tk);
+
+        return child;
+    } else {
+        error("Label", tk);
+
+        return NULL;
+    }
 }
 
-void RO(){
+Node* RO(){
+    Node *child = initNode();
     if (tk->tokenType == GREATERTHANtk){
+        child->tk1 = tk;
         printAndIncrement();
+
+        return child;
     } else if (tk->tokenType == LESSTHANtk){
+        child->tk1 = tk;
         printAndIncrement();
+
+        return child;
     } else if (tk->tokenType == DEQUALtk){
+        child->tk1 = tk;
         printAndIncrement();
+
+        return child;
     } else if (tk->tokenType == LBRACtk){
+        child->tk1 = tk;
         printAndIncrement();
 
         if (tk->tokenType == DEQUALtk){
+            child->tk2 = tk;
             printAndIncrement();
 
             if (tk->tokenType == RBRACtk){
+                child->tk3 = tk;
                 printAndIncrement();
+
+                return child;
             } else error("RO", tk);
         } else error("RO", tk);
     } else if (tk->tokenType == MODtk){
-        printAndIncrement();
-    } else error("RO", tk);
-}
-
-void Expression(){
-    N();
-    if (tk->tokenType == PLUStk){
+        child->tk1 = tk;
         printAndIncrement();
 
-        Expression();
+        return child;
+    } else {
+        error("RO", tk);
+
+        return NULL;
     }
 }
 
-void N(){
-    A();
+Node* Expression(){
+    Node *child = initNode();
+
+    child->child1 = N();
+    if (tk->tokenType == PLUStk){
+        child->tk1 = tk;
+        printAndIncrement();
+
+        child->child2 = Expression();
+
+        return child;
+    }
+
+    return child;
+}
+
+Node* N(){
+    Node *child = initNode();
+
+    child->child1 = A();
 
     if (tk->tokenType == DIVtk){
+        child->tk1 = tk;
         printAndIncrement();
 
-        N();
+        child->child2 = N();
+
+        return child;
     } else if (tk->tokenType == MULTtk){
+        child->tk1 = tk;
         printAndIncrement();
 
-        N();
+        child->child2 = N();
+
+        return child;
     }
+
+    return child;
 }
 
-void A(){
-    M();
+Node* A(){
+    Node *child = initNode();
+    child->child1 = M();
 
     if (tk->tokenType == MINUStk){
+        child->tk1 = tk;
         printAndIncrement();
 
-        A();
+        child->child2 = A();
+
+        return child;
     }
+
+    return child;
 }
 
-void M(){
+Node* M(){
+    Node *child = initNode();
+
     if (tk->tokenType == DOTtk){
+        child->tk1 = tk;
         printAndIncrement();
 
-        M();
+        child->child1 = M();
+
+        return child;
     } else {
-        R();
+        child->child1 = R();
+
+        return child;
     }
+
+    return child;
 }
 
-void R(){
+Node* R(){
+    Node *child = initNode();
     if (tk->tokenType == LPARtk){
         printAndIncrement();
 
-        Expression();
+        child->child1 = Expression();
 
         if (tk->tokenType == RPARtk){
             printAndIncrement();
+
+            return child;
         } else error("R", tk);
     } else if (tk->tokenType == IDtk){
+        child->tk1 = tk; 
         printAndIncrement();
+
+        return child;
     } else if (tk->tokenType == DIGITtk){
+        child->tk1 = tk; 
         printAndIncrement();
+
+        return child;
     } else error("R", tk);
 }
 

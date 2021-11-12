@@ -26,6 +26,8 @@ vector<Token*> createTokenVector();
 
 vector<Token*> createTokenVector(string fileName);
 
+Token* generateToken(string tokenValue, TokenType type, int charCount, int lineCount);
+
 void printTokens(vector<Token*> tokens);
 
 void freeTokenVector(vector<Token*> tokens);
