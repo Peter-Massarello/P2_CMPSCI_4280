@@ -6,6 +6,23 @@ static Token* tk;
 vector<Token*> tokenList;
 static int tokenIndex = 0;
 
+map<TokenType, string> identifierMap = {
+    {DIGITtk,"Digit"},
+    {EQUALtk,"="},
+    {DEQUALtk,"=="},
+    {LESSTHANtk,"<"},
+    {GREATERTHANtk,">"},
+    {PLUStk,"+"},
+    {MINUStk,"-"},
+    {MULTtk,"*"},
+    {DIVtk,"/"},
+    {MODtk,"%"},
+    {DOTtk,"."},
+    {LBRACtk,"{"},
+    {RBRACtk, "}"},
+    {IDtk,"Identifier"}
+};
+
 void parse(vector<Token*> tokens){
     cout << "parsing" << endl;
     tokenList = tokens;
@@ -16,6 +33,8 @@ void parse(vector<Token*> tokens){
 
     root = Program();
 
+    tokenIndex = 0;
+    printPreorder(root, 0);
 }
 
 void printAndIncrement(){
@@ -44,6 +63,7 @@ Node* initNode(){
 
 Node* Program(){
     Node *child = initNode();
+    child->nodeType = "<PROGRAM>";
 
     child->child1 = Vars();
     if (tk->tokenType == PROGRAMtk){
@@ -61,6 +81,7 @@ Node* Program(){
 Node* Block(){
     if (tk->tokenType == STARTtk){
         Node *child = initNode();
+        child->nodeType = "<BLOCK>";
 
         printAndIncrement();
 
@@ -72,16 +93,20 @@ Node* Block(){
             return child;
         } else error("Block Stop", tk);
     } else error("Block Start", tk);
+
+    return NULL;
 }
 
 Node* Vars(){
     Node *child = initNode();
+    child->nodeType = "<VARS>";
 
     if (tk->tokenType == DECLAREtk){
         printAndIncrement();
 
         if (tk->tokenType == IDtk){
             child->tk1 = tk;
+            cout << child->tk1->token << "<- token name" << endl;
             printAndIncrement();
             
 
@@ -108,13 +133,17 @@ Node* Vars(){
 
 Node* Stats(){
     Node *child = initNode();
+    child->nodeType = "<STATS>";
 
     child->child1 = Stat();
     child->child2 = Mstat();
+
+    return child;
 }
 
 Node* Stat(){
     Node *child = initNode();
+    child->nodeType = "<STAT>";
 
     if (tk->tokenType == LISTENtk){
         child->child1 = In();
@@ -180,10 +209,13 @@ Node* Stat(){
         error("Else Stat", tk);
         return NULL;
     } 
+
+    return NULL;
 }
 
 Node* Mstat(){
     Node *child = initNode();
+    child->nodeType = "<MSTAT>";
 
     if (tk->tokenType == LISTENtk ||
         tk->tokenType == TALKtk || 
@@ -203,11 +235,13 @@ Node* Mstat(){
 
 Node* In(){
     Node *child = initNode();
+    child->nodeType = "<IN>";
 
     printAndIncrement();
 
     if (tk->tokenType == IDtk){
         child->tk1 = tk;
+        cout << child->tk1->token << "<- token name" << endl;
         printAndIncrement();
         return child;
 
@@ -219,6 +253,7 @@ Node* In(){
 
 Node* Out(){
     Node *child = initNode();
+    child->nodeType = "<OUT>";
 
     printAndIncrement();
 
@@ -229,6 +264,7 @@ Node* Out(){
 
 Node* If(){
     Node *child = initNode();
+    child->nodeType = "<IF>";
     printAndIncrement();
 
     if (tk->tokenType == LBRACKtk){
@@ -260,10 +296,13 @@ Node* If(){
 
         return NULL;
     }
+
+    return NULL;
 }
 
 Node* Loop(){
     Node *child = initNode();
+    child->nodeType = "<LOOP>";
     printAndIncrement();
 
     if (tk->tokenType == LBRACKtk){
@@ -285,10 +324,13 @@ Node* Loop(){
 
         return NULL;
     }
+
+    return NULL;
 }
 
 Node* Assign(){
     Node *child = initNode();
+    child->nodeType = "<ASSIGN>";
     printAndIncrement();
 
     if (tk->tokenType == IDtk){
@@ -307,10 +349,13 @@ Node* Assign(){
 
         return NULL;
     }
+
+    return NULL;
 }
 
 Node* Goto(){
     Node *child = initNode();
+    child->nodeType = "<GOTO>";
     printAndIncrement();
 
     if (tk->tokenType == IDtk){
@@ -327,6 +372,7 @@ Node* Goto(){
 
 Node* Label(){
     Node *child = initNode();
+    child->nodeType = "<LABEL>";
     printAndIncrement();
 
     if (tk->tokenType == IDtk){
@@ -343,6 +389,7 @@ Node* Label(){
 
 Node* RO(){
     Node *child = initNode();
+    child->nodeType = "<RO>";
     if (tk->tokenType == GREATERTHANtk){
         child->tk1 = tk;
         printAndIncrement();
@@ -383,10 +430,13 @@ Node* RO(){
 
         return NULL;
     }
+
+    return NULL;
 }
 
 Node* Expression(){
     Node *child = initNode();
+    child->nodeType = "<EXPRESSION>";
 
     child->child1 = N();
     if (tk->tokenType == PLUStk){
@@ -403,6 +453,7 @@ Node* Expression(){
 
 Node* N(){
     Node *child = initNode();
+    child->nodeType = "<N>";
 
     child->child1 = A();
 
@@ -427,6 +478,8 @@ Node* N(){
 
 Node* A(){
     Node *child = initNode();
+    child->nodeType = "<A>";
+
     child->child1 = M();
 
     if (tk->tokenType == MINUStk){
@@ -443,6 +496,7 @@ Node* A(){
 
 Node* M(){
     Node *child = initNode();
+    child->nodeType = "<M>";
 
     if (tk->tokenType == DOTtk){
         child->tk1 = tk;
@@ -462,6 +516,8 @@ Node* M(){
 
 Node* R(){
     Node *child = initNode();
+    child->nodeType = "<R>";
+
     if (tk->tokenType == LPARtk){
         printAndIncrement();
 
@@ -473,49 +529,65 @@ Node* R(){
             return child;
         } else error("R", tk);
     } else if (tk->tokenType == IDtk){
-        child->tk1 = tk; 
+        child->tk1 = tk;
         printAndIncrement();
 
         return child;
     } else if (tk->tokenType == DIGITtk){
-        child->tk1 = tk; 
+        child->tk1 = tk;
         printAndIncrement();
 
         return child;
-    } else error("R", tk);
+    } else {
+        error("R", tk);
+
+        return NULL;
+    }
+
+    return NULL;
 }
 
 // Prints current node level to file
 void printRootLevelToStdOut(Node* &root, int level){
+    tokenIndex++;
+    cout << string(level*2, ' ') << root->nodeType << endl;
 
-}
+    if (root->tk1->tokenType != NULLtk){
+        cout << string(level*2, ' ') << "{Token" << tokenIndex << ": " << identifierMap[root->tk1->tokenType] << ", " << root->tk1->token << ", Line #: " << root->tk1->lineNum << "}" << endl;
+    }
+        
+    if (root->tk2->tokenType != NULLtk){
+        cout << string(level*2, ' ') << "{Token" << tokenIndex << ": " << identifierMap[root->tk2->tokenType] << ", " << root->tk2->token << ", Line #: " << root->tk2->lineNum << "}" << endl;
+    }
+       
 
-// left root right
-void printInorder(ofstream &file, Node* &root, int level){
-    if (root == NULL) return;
+    if (root->tk3->tokenType != NULLtk){
+        cout << string(level*2, ' ') << "{Token" << tokenIndex << ": " << identifierMap[root->tk3->tokenType] << ", " << root->tk2->token << ", Line #: " << root->tk2->lineNum << "}" << endl;
+    }
 
-    //left substree
-    printInorder(file, root->child1, level+1);
-
-    //root
-    printRootLevelToStdOut(root, level);    
-
-    //right subtree
-    printInorder(file, root->child2, level+1);
 }
 
 // root left right
-void printPreorder(ofstream &file, Node* &root, int level){
+void printPreorder(Node* &root, int level){
     if (root == NULL) return;
 
     //root
     printRootLevelToStdOut(root, level);  
 
     //left substree
-    printInorder(file, root->child1, level+1);  
+    printPreorder(root->child1, level+1);  
 
     //right subtree
-    printInorder(file, root->child2, level+1);
+    printPreorder(root->child2, level+1);
+
+    //right subtree
+    printPreorder(root->child3, level+1);
+
+    //right subtree
+    printPreorder(root->child4, level+1);
+
+    //right subtree
+    printPreorder(root->child5, level+1);
 }
 
 void error(string grammarLevel, Token* tk){

@@ -25,6 +25,7 @@ Node* Label();
 Node* Goto();
 void printAndIncrement();
 void printRootLevelToStdOut(Node* &root, int level);
+void printPreorder(Node* &root, int level);
 Node* initNode();
 void error(string grammarLevel, Token* tk);
 
