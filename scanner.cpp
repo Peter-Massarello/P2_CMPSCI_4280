@@ -333,7 +333,6 @@ vector<Token*> driverFunction(vector<string> lines){
     tokens.push_back(eofToken);
 
     delete data; // free data
-    printTokens(tokens); // print Tokens
     return tokens;
 }
 

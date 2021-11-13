@@ -2,11 +2,12 @@
 #include "scanner.hpp"
 #include "node.hpp"
 
-static Token* tk;
-static Token* nullTk = new Token("", NULLtk, 0, 0);
-vector<Token*> tokenList;
-static int tokenIndex = 0;
+static Token* tk; // Lookahead placeholder
+static Token* nullTk = new Token("", NULLtk, 0, 0); // empty tk used in init
+vector<Token*> tokenList; // vector of tokens from scanner
+static int tokenIndex = 0; // token index used for lookahead and printing
 
+// map of token identifiers to strings for stdout
 map<TokenType, string> identifierMap = {
     {DIGITtk,"Digit"},
     {EQUALtk,"Equal"},
@@ -24,6 +25,7 @@ map<TokenType, string> identifierMap = {
     {IDtk,"Identifier"}
 };
 
+// Main parsing function
 void parse(vector<Token*> tokens){
     cout << "Parsing..." << endl;
     tokenList = tokens;
@@ -38,11 +40,13 @@ void parse(vector<Token*> tokens){
     printPreorder(root, 0);
 }
 
-void printAndIncrement(){
+// gets net lookahead
+void incrementLookahead(){
     tk = scanner(tokenList, tokenIndex);
     tokenIndex++;
 }
 
+// Inits a blank child node
 Node* initNode(){
     Node *newNode = new Node();
 
@@ -61,35 +65,36 @@ Node* initNode(){
     return newNode;
 }
 
+// <vars> program <block>
 Node* Program(){
     Node *child = initNode();
     child->nodeType = "<PROGRAM>";
 
     child->child1 = Vars();
     if (tk->tokenType == PROGRAMtk){
-        printAndIncrement();
+        incrementLookahead();
        child->child2 = Block();
     }else error("Program", tk);
 
     if (tk->tokenType == EOFtk){
-        cout << tk->token << " " << tk->tokenType << endl;
     } else error("Program", tk);
 
     return child;
 }
 
+// start <vars> <stats> stop
 Node* Block(){
     if (tk->tokenType == STARTtk){
         Node *child = initNode();
         child->nodeType = "<BLOCK>";
 
-        printAndIncrement();
+        incrementLookahead();
 
         child->child1 = Vars();
         child->child2 = Stats();
 
         if (tk->tokenType == STOPtk){
-            printAndIncrement();
+            incrementLookahead();
             return child;
         } else error("Block Stop", tk);
     } else error("Block Start", tk);
@@ -97,28 +102,28 @@ Node* Block(){
     return NULL;
 }
 
+// empty | declare Identifier = Integer ; <vars>
 Node* Vars(){
     Node *child = initNode();
     child->nodeType = "<VARS>";
 
     if (tk->tokenType == DECLAREtk){
-        printAndIncrement();
+        incrementLookahead();
 
         if (tk->tokenType == IDtk){
             child->tk1 = tk;
-            cout << child->tk1->token << "<- token name" << endl;
-            printAndIncrement();
+            incrementLookahead();
             
 
             if (tk->tokenType == EQUALtk){
-                printAndIncrement();
+                incrementLookahead();
 
                 if (tk->tokenType == DIGITtk) {
                     child->tk2 = tk;
-                    printAndIncrement();
+                    incrementLookahead();
 
                     if (tk->tokenType == SEMItk){
-                        printAndIncrement();
+                        incrementLookahead();
 
                         child->child1 = Vars();
                         return child;
@@ -131,6 +136,7 @@ Node* Vars(){
     return child;
 }
 
+// <stat> <mStat>
 Node* Stats(){
     Node *child = initNode();
     child->nodeType = "<STATS>";
@@ -141,6 +147,7 @@ Node* Stats(){
     return child;
 }
 
+// <in> ; | <out> ; | <block> | <if> ; | <loop> ; | <assign> ; | <goto> ; | <label> ;
 Node* Stat(){
     Node *child = initNode();
     child->nodeType = "<STAT>";
@@ -149,7 +156,7 @@ Node* Stat(){
         child->child1 = In();
 
         if (tk->tokenType == SEMItk){
-            printAndIncrement();
+            incrementLookahead();
 
             return child;
         } else error("In Stat", tk);
@@ -157,7 +164,7 @@ Node* Stat(){
         child->child1 = Out();
 
         if (tk->tokenType == SEMItk){
-            printAndIncrement();
+            incrementLookahead();
 
             return child;
         } else error("Out Stat", tk);
@@ -169,7 +176,7 @@ Node* Stat(){
         child->child1 = If();
 
         if (tk->tokenType == SEMItk){
-            printAndIncrement();
+            incrementLookahead();
 
             return child;
         } else error("If Stat", tk);
@@ -177,7 +184,7 @@ Node* Stat(){
         child->child1 = Loop();
 
         if (tk->tokenType == SEMItk){
-            printAndIncrement();
+            incrementLookahead();
 
             return child;
         } else error("Loop Stat", tk);
@@ -185,7 +192,7 @@ Node* Stat(){
         child->child1 = Assign();
 
         if (tk->tokenType == SEMItk){
-            printAndIncrement();
+            incrementLookahead();
 
             return child;
         } else error("Assign Stat", tk);
@@ -193,7 +200,7 @@ Node* Stat(){
         child->child1 = Label();
 
         if (tk->tokenType == SEMItk){
-            printAndIncrement();
+            incrementLookahead();
 
             return child;
         } else error("Label Stat", tk);
@@ -201,7 +208,7 @@ Node* Stat(){
         child->child1 = Goto();
 
         if (tk->tokenType == SEMItk){
-            printAndIncrement();
+            incrementLookahead();
 
             return child;
         } else error("Goto Stat", tk);
@@ -213,6 +220,7 @@ Node* Stat(){
     return NULL;
 }
 
+// empty | <stat> <mStat>
 Node* Mstat(){
     Node *child = initNode();
     child->nodeType = "<MSTAT>";
@@ -233,16 +241,16 @@ Node* Mstat(){
     return child;
 }
 
+// listen Identfier 
 Node* In(){
     Node *child = initNode();
     child->nodeType = "<IN>";
 
-    printAndIncrement();
+    incrementLookahead();
 
     if (tk->tokenType == IDtk){
         child->tk1 = tk;
-        cout << child->tk1->token << "<- token name" << endl;
-        printAndIncrement();
+        incrementLookahead();
         return child;
 
     } else {
@@ -251,39 +259,41 @@ Node* In(){
     }
 }
 
+// talk <expr>
 Node* Out(){
     Node *child = initNode();
     child->nodeType = "<OUT>";
 
-    printAndIncrement();
+    incrementLookahead();
 
     child->child1 = Expression();
 
     return child;
 }
 
+// if [ <expr> <RO> <expr>] then <stat> | if [ <expr> <RO> <expr>] then <stat> else <stat>
 Node* If(){
     Node *child = initNode();
     child->nodeType = "<IF>";
-    printAndIncrement();
+    incrementLookahead();
 
     if (tk->tokenType == LBRACKtk){
-        printAndIncrement();
+        incrementLookahead();
 
         child->child1 = Expression();
         child->child2 = RO();
         child->child3 = Expression();
 
         if (tk->tokenType == RBRACKtk){
-            printAndIncrement();
+            incrementLookahead();
 
             if (tk->tokenType == THENtk){
-                printAndIncrement();
+                incrementLookahead();
 
                 child->child4 = Stat();
 
                 if (tk->tokenType == ELSEtk){
-                    printAndIncrement();
+                    incrementLookahead();
 
                     child->child5 = Stat();
 
@@ -300,20 +310,21 @@ Node* If(){
     return NULL;
 }
 
+// while [ <expr> <RO> <expr>] <stat>
 Node* Loop(){
     Node *child = initNode();
     child->nodeType = "<LOOP>";
-    printAndIncrement();
+    incrementLookahead();
 
     if (tk->tokenType == LBRACKtk){
-        printAndIncrement();
+        incrementLookahead();
 
         child->child1 = Expression();
         child->child2 = RO();
         child->child3 = Expression();
 
         if (tk->tokenType == RBRACKtk){
-            printAndIncrement();
+            incrementLookahead();
 
             child->child4 = Stat();
 
@@ -328,17 +339,18 @@ Node* Loop(){
     return NULL;
 }
 
+// assign Identifier = <expr>
 Node* Assign(){
     Node *child = initNode();
     child->nodeType = "<ASSIGN>";
-    printAndIncrement();
+    incrementLookahead();
 
     if (tk->tokenType == IDtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         if (tk->tokenType == EQUALtk) {
-            printAndIncrement();
+            incrementLookahead();
 
             child->child1 = Expression();
 
@@ -353,14 +365,15 @@ Node* Assign(){
     return NULL;
 }
 
+// jump Identifier
 Node* Goto(){
     Node *child = initNode();
     child->nodeType = "<GOTO>";
-    printAndIncrement();
+    incrementLookahead();
 
     if (tk->tokenType == IDtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         return child;
     } else {
@@ -370,14 +383,15 @@ Node* Goto(){
     }
 }
 
+// label Identifier
 Node* Label(){
     Node *child = initNode();
     child->nodeType = "<LABEL>";
-    printAndIncrement();
+    incrementLookahead();
 
     if (tk->tokenType == IDtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         return child;
     } else {
@@ -387,42 +401,43 @@ Node* Label(){
     }
 }
 
+// > | < | == | {==} | %
 Node* RO(){
     Node *child = initNode();
     child->nodeType = "<RO>";
     if (tk->tokenType == GREATERTHANtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         return child;
     } else if (tk->tokenType == LESSTHANtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         return child;
     } else if (tk->tokenType == DEQUALtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         return child;
     } else if (tk->tokenType == LBRACtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         if (tk->tokenType == DEQUALtk){
             child->tk2 = tk;
-            printAndIncrement();
+            incrementLookahead();
 
             if (tk->tokenType == RBRACtk){
                 child->tk3 = tk;
-                printAndIncrement();
+                incrementLookahead();
 
                 return child;
             } else error("RO", tk);
         } else error("RO", tk);
     } else if (tk->tokenType == MODtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         return child;
     } else {
@@ -434,6 +449,7 @@ Node* RO(){
     return NULL;
 }
 
+// <N> + <expr> | <N>
 Node* Expression(){
     Node *child = initNode();
     child->nodeType = "<EXPRESSION>";
@@ -441,7 +457,7 @@ Node* Expression(){
     child->child1 = N();
     if (tk->tokenType == PLUStk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         child->child2 = Expression();
 
@@ -451,6 +467,7 @@ Node* Expression(){
     return child;
 }
 
+// <A> / <N> | <A> * <N> | <A>
 Node* N(){
     Node *child = initNode();
     child->nodeType = "<N>";
@@ -459,14 +476,14 @@ Node* N(){
 
     if (tk->tokenType == DIVtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         child->child2 = N();
 
         return child;
     } else if (tk->tokenType == MULTtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         child->child2 = N();
 
@@ -476,6 +493,7 @@ Node* N(){
     return child;
 }
 
+//<M> - <A> | <M>
 Node* A(){
     Node *child = initNode();
     child->nodeType = "<A>";
@@ -484,7 +502,7 @@ Node* A(){
 
     if (tk->tokenType == MINUStk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         child->child2 = A();
 
@@ -494,13 +512,14 @@ Node* A(){
     return child;
 }
 
+// .<M> | <R>
 Node* M(){
     Node *child = initNode();
     child->nodeType = "<M>";
 
     if (tk->tokenType == DOTtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         child->child1 = M();
 
@@ -514,28 +533,29 @@ Node* M(){
     return child;
 }
 
+// ( <expr> ) | Identifier | Integer
 Node* R(){
     Node *child = initNode();
     child->nodeType = "<R>";
 
     if (tk->tokenType == LPARtk){
-        printAndIncrement();
+        incrementLookahead();
 
         child->child1 = Expression();
 
         if (tk->tokenType == RPARtk){
-            printAndIncrement();
+            incrementLookahead();
 
             return child;
         } else error("R", tk);
     } else if (tk->tokenType == IDtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         return child;
     } else if (tk->tokenType == DIGITtk){
         child->tk1 = tk;
-        printAndIncrement();
+        incrementLookahead();
 
         return child;
     } else {
@@ -549,19 +569,21 @@ Node* R(){
 
 // Prints current node level to file
 void printRootLevelToStdOut(Node* &root, int level){
-    tokenIndex++;
     cout << string(level*2, ' ') << root->nodeType << endl;
 
     if (root->tk1->tokenType != NULLtk){
+        tokenIndex++;
         cout << string(level*2, ' ') << "{Token" << tokenIndex << ": " << identifierMap[root->tk1->tokenType] << ", " << root->tk1->token << ", Line #: " << root->tk1->lineNum << "}" << endl;
     }
         
     if (root->tk2->tokenType != NULLtk){
+        tokenIndex++;
         cout << string(level*2, ' ') << "{Token" << tokenIndex << ": " << identifierMap[root->tk2->tokenType] << ", " << root->tk2->token << ", Line #: " << root->tk2->lineNum << "}" << endl;
     }
        
 
     if (root->tk3->tokenType != NULLtk){
+        tokenIndex++;
         cout << string(level*2, ' ') << "{Token" << tokenIndex << ": " << identifierMap[root->tk3->tokenType] << ", " << root->tk2->token << ", Line #: " << root->tk2->lineNum << "}" << endl;
     }
 
@@ -574,22 +596,23 @@ void printPreorder(Node* &root, int level){
     //root
     printRootLevelToStdOut(root, level);  
 
-    //left substree
+    //subtrees
     printPreorder(root->child1, level+1);  
 
-    //right subtree
+    //subtrees
     printPreorder(root->child2, level+1);
 
-    //right subtree
+    //subtrees
     printPreorder(root->child3, level+1);
 
-    //right subtree
+    //subtrees
     printPreorder(root->child4, level+1);
 
-    //right subtree
+    //subtrees
     printPreorder(root->child5, level+1);
 }
 
+//error printing function
 void error(string grammarLevel, Token* tk){
     cout << "PARSER ERROR: Parser has encountered error at on grammar " << grammarLevel << ", token " << tk->token << endl;
     exit(0);
