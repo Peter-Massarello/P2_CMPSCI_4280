@@ -3,28 +3,29 @@
 #include "node.hpp"
 
 static Token* tk;
+static Token* nullTk = new Token("", NULLtk, 0, 0);
 vector<Token*> tokenList;
 static int tokenIndex = 0;
 
 map<TokenType, string> identifierMap = {
     {DIGITtk,"Digit"},
-    {EQUALtk,"="},
-    {DEQUALtk,"=="},
-    {LESSTHANtk,"<"},
-    {GREATERTHANtk,">"},
-    {PLUStk,"+"},
-    {MINUStk,"-"},
-    {MULTtk,"*"},
-    {DIVtk,"/"},
-    {MODtk,"%"},
-    {DOTtk,"."},
-    {LBRACtk,"{"},
-    {RBRACtk, "}"},
+    {EQUALtk,"Equal"},
+    {DEQUALtk,"Double Equal"},
+    {LESSTHANtk,"Less Than"},
+    {GREATERTHANtk,"Greater Than"},
+    {PLUStk,"Plus"},
+    {MINUStk,"Minus"},
+    {MULTtk,"Multiply"},
+    {DIVtk,"Divide"},
+    {MODtk,"Modulus"},
+    {DOTtk,"Dot"},
+    {LBRACtk,"Left Brace"},
+    {RBRACtk, "Right Brace"},
     {IDtk,"Identifier"}
 };
 
 void parse(vector<Token*> tokens){
-    cout << "parsing" << endl;
+    cout << "Parsing..." << endl;
     tokenList = tokens;
     Node *root;
 
@@ -38,7 +39,6 @@ void parse(vector<Token*> tokens){
 }
 
 void printAndIncrement(){
-    cout << tk->token << " " << tk->tokenType << endl;
     tk = scanner(tokenList, tokenIndex);
     tokenIndex++;
 }
@@ -48,9 +48,9 @@ Node* initNode(){
 
     newNode->nodeType = "";
 
-    newNode->tk1 = generateToken("", NULLtk, 0, 0);
-    newNode->tk2 = generateToken("", NULLtk, 0, 0);
-    newNode->tk3 = generateToken("", NULLtk, 0, 0);
+    newNode->tk1 = nullTk;
+    newNode->tk2 = nullTk;
+    newNode->tk3 = nullTk;
 
     newNode->child1 = NULL;
     newNode->child2 = NULL;
