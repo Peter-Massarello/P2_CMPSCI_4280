@@ -11,7 +11,7 @@
 
 # How to run:
 
-    - ./parser [filename] 
+    - ./frontEnd [filename] 
         - Invoked with a given file and it will parse the file then print out the parse tree
 
 # How to cleanup:
